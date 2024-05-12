@@ -25,7 +25,7 @@
                 this.userId = '';
 
                 // save instagram code
-                this._getCode = params['get_code'];
+                this._getCode = params.get_code;
 
                 // get an access token
                 this._setUserInstagramAccessToken(params);
@@ -54,19 +54,19 @@
                 this.authorizationUrl = this._apiBaseUrl + 'oauth/authorize?' + new URLSearchParams(getVars);
             }
 
-            _setUserInstagramAccessToken(params) {
+            async _setUserInstagramAccessToken(params) {
                 if (params['access_token']) { // we have an access token
                     this._userAccessToken = params['access_token'];
                     this.hasUserAccessToken = true;
                     this.userId = params['user_id'];
                 } else if (params['get_code']) { // try and get an access token
-                    const userAccessTokenResponse = this._getUserAccessToken();
+                    const userAccessTokenResponse = await this._getUserAccessToken();
                     this._userAccessToken = userAccessTokenResponse['access_token'];
                     this.hasUserAccessToken = true;
                     this.userId = userAccessTokenResponse['user_id'];
 
                     // get long lived access token
-                    const longLivedAccessTokenResponse = this._getLongLivedUserAccessToken();
+                    const longLivedAccessTokenResponse = await this._getLongLivedUserAccessToken();
                     this._userAccessToken = longLivedAccessTokenResponse['access_token'];
                     this._userAccessTokenExpires = longLivedAccessTokenResponse['expires_in'];
                 }
@@ -202,7 +202,7 @@
             document.write('<h4>IG Info</h4><hr />');
             
             // Récupération des informations utilisateur
-            const user = ig.getUser();
+            const user = await ig.getUser();
             document.write('<pre>' + JSON.stringify(user, null, 2) + '</pre>');
             document.write('<h1>Username: ' + user.username + '</h1>');
             document.write('<h2>IG ID: ' + user.id + '</h2>');
@@ -215,8 +215,8 @@
             document.write('<h3>Highlighted Post</h3>');
             document.write('<div>Media ID: ' + highlightedPostId + '</div>');
             
-            const media = ig.getMedia(highlightedPostId);
-            const mediaChildren = ig.getMediaChildren(highlightedPostId);
+            const media = await ig.getMedia(highlightedPostId);
+            const mediaChildren = await ig.getMediaChildren(highlightedPostId);
 
             document.write('<h4>Raw Data</h4>');
             document.write('<textarea style="width:100%;height:400px;">Media ' + JSON.stringify(media, null, 2) + 'Children ' + JSON.stringify(mediaChildren, null, 2) + '</textarea>');
@@ -239,7 +239,7 @@
             document.write('</div>');
 
             // Récupération des médias de l'utilisateur
-            const usersMedia = ig.getUsersMedia();
+            const usersMedia = await ig.getUsersMedia();
             document.write('<h3>Users Media Page 1 (' + usersMedia.data.length + ')</h3>');
             document.write('<h4>Raw Data</h4>');
             document.write('<textarea style="width:100%;height:400px;">' + JSON.stringify(usersMedia, null, 2) + '</textarea>');
@@ -264,7 +264,7 @@
             document.write('</ul>');
 
             // Récupération de la page suivante de médias de l'utilisateur
-            const usersMediaNext = ig.getPaging(usersMedia.paging.next);
+            const usersMediaNext = await ig.getPaging(usersMedia.paging.next);
             document.write('<h3>Users Media Page 2 (' + usersMediaNext.data.length + ')</h3>');
             document.write('<h4>Raw Data</h4>');
             document.write('<textarea style="width:100%;height:400px;">' + JSON.stringify(usersMediaNext, null, 2) + '</textarea>');
