@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Basic Display API</title>
+</head>
+<body>
+    <h1>Instagram Basic Display API</h1>
+    <hr />
+    <script>
+        // JavaScript code to handle Instagram Basic Display API interactions
+        class InstagramBasicDisplayAPI {
+            constructor(params) {
+                this._appId = '1204377340973163';
+                this._appSecret = '24d857087673311ac6720adb1b7ab27a';
+                this._redirectUrl = 'https://thegooddarkside.github.io/WebPageCode/instagram_basic_display_api/';
+                this._getCode = params.getCode || '';
+                this._apiBaseUrl = 'https://api.instagram.com/';
+                this._graphBaseUrl = 'https://graph.instagram.com/';
+                this._userAccessToken = '';
+                this._userAccessTokenExpires = '';
+                this.authorizationUrl = '';
+
+                this.hasUserAccessToken = false;
+                this.userId = '';
+
+                this._setUserInstagramAccessToken(params);
+                this._setAuthorizationUrl();
+            }
+
+            _setAuthorizationUrl() {
+                const getVars = {
+                    app_id: this._appId,
+                    redirect_uri: this._redirectUrl,
+                    scope: 'user_profile,user_media',
+                    response_type: 'code'
+                };
+                this.authorizationUrl = this._apiBaseUrl + 'oauth/authorize?' + new URLSearchParams(getVars);
+            }
+
+            _setUserInstagramAccessToken(params) {
+                if (params.accessToken) {
+                    this._userAccessToken = params.accessToken;
+                    this.hasUserAccessToken = true;
+                    this.userId = params.userId;
+                } else if (params.getCode) {
+                    const userAccessTokenResponse = this._getUserAccessToken();
+                    this._userAccessToken = userAccessTokenResponse.access_token;
+                    this.hasUserAccessToken = true;
+                    this.userId = userAccessTokenResponse.user_id;
+
+                    const longLivedAccessTokenResponse = this._getLongLivedUserAccessToken();
+                    this._userAccessToken = longLivedAccessTokenResponse.access_token;
+                    this._userAccessTokenExpires = longLivedAccessTokenResponse.expires_in;
+                }
+            }
+
+            _getUserAccessToken() {
+                const endpointUrl = this._apiBaseUrl + 'oauth/access_token';
+                const urlParams = {
+                    app_id: this._appId,
+                    app_secret: this._appSecret,
+                    grant_type: 'authorization_code',
+                    redirect_uri: this._redirectUrl,
+                    code: this._getCode
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'POST', urlParams });
+            }
+
+            _getLongLivedUserAccessToken() {
+                const endpointUrl = this._graphBaseUrl + 'access_token';
+                const urlParams = {
+                    client_secret: this._appSecret,
+                    grant_type: 'ig_exchange_token'
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+
+            _makeApiCall(params) {
+                let endpoint = params.endpointUrl;
+
+                if (params.type === 'POST') {
+                    const formData = new FormData();
+                    for (const key in params.urlParams) {
+                        formData.append(key, params.urlParams[key]);
+                    }
+                    return fetch(endpoint, { method: 'POST', body: formData })
+                        .then(response => response.json())
+                        .catch(error => console.error('Error:', error));
+                } else if (params.type === 'GET' && !params.urlParams.paging) {
+                    params.urlParams.access_token = this._userAccessToken;
+                    endpoint += '?' + new URLSearchParams(params.urlParams);
+                }
+
+                return fetch(endpoint)
+                    .then(response => response.json())
+                    .catch(error => console.error('Error:', error));
+            }
+
+            getUser() {
+                const endpointUrl = this._graphBaseUrl + 'me';
+                const urlParams = {
+                    fields: 'id,username,media_count,account_type'
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+
+            getUsersMedia() {
+                const endpointUrl = this._graphBaseUrl + this.userId + '/media';
+                const urlParams = {
+                    fields: 'id,caption,media_type,media_url'
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+
+            getPaging(pagingEndpoint) {
+                const endpointUrl = pagingEndpoint;
+                const urlParams = { paging: true };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+
+            getMedia(mediaId) {
+                const endpointUrl = this._graphBaseUrl + mediaId;
+                const urlParams = {
+                    fields: 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username'
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+
+            getMediaChildren(mediaId) {
+                const endpointUrl = this._graphBaseUrl + mediaId + '/children';
+                const urlParams = {
+                    fields: 'id,media_type,media_url,permalink,thumbnail_url,timestamp,username'
+                };
+
+                return this._makeApiCall({ endpointUrl, type: 'GET', urlParams });
+            }
+        }
+
+        // Example usage:
+        const accessToken = 'ACCESS-TOKEN';
+        const params = {
+            getCode: new URLSearchParams(window.location.search).get('code'),
+            accessToken,
+            userId: 'USER-ID'
+        };
+        const ig = new InstagramBasicDisplayAPI(params);
+
+        function authorizeWithInstagram() {
+            window.location.href = ig.authorizationUrl;
+        }
+
+        function displayUserData() {
+            const user = ig.getUser();
+            user.then(data => {
+                console.log(data); // You can display or process user data as required
+            }).catch(error => console.error('Error:', error));
+        }
+
+        function displayUserMedia() {
+            const userMedia = ig.getUsersMedia();
+            userMedia.then(data => {
+                console.log(data); // You can display or process user media data as required
+            }).catch(error => console.error('Error:', error));
+        }
+
+        // You can define more functions for handling different API calls or user interactions
+
+        // You can call functions or handle user interactions as needed
+    </script>
+
+    <!-- Example HTML for user interaction -->
+    <button onclick="authorizeWithInstagram()">Authorize with Instagram</button>
+    <button onclick="displayUserData()">Display User Data</button>
+    <button onclick="displayUserMedia()">Display User Media</button>
+
+</body>
+</html>
