@@ -64,7 +64,7 @@ class InstagramBasicDisplayApi {
         const response = await fetch(this._apiBaseUrl + 'oauth/access_token', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
                 'app_id': this._appId,
@@ -154,7 +154,7 @@ class InstagramBasicDisplayApi {
         };
 
         if (params['type'] === 'POST') {
-            options.headers['Content-Type'] = 'application/json';
+            options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
             options.body = new URLSearchParams(params['url_params']);
         } else if (params['type'] === 'GET' && !params['url_params']['paging']) {
             params['url_params']['access_token'] = this._userAccessToken;
