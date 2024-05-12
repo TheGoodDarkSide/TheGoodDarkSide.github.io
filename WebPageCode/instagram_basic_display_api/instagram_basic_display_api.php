@@ -2,9 +2,9 @@
 	require_once( 'defines.php' );
 
 	Class instagram_basic_display_api {
-		private $_appId = INSTAGRAM_APP_ID;
-		private $_appSecret = INSTAGRAM_APP_SECRET;
-		private $_redirectUrl = INSTAGRAM_APP_REDIRECT_URI;
+		private $_appId = '808510217872665';
+		private $_appSecret = '24d857087673311ac6720adb1b7ab27a';
+		private $_redirectUrl = 'https://thegooddarkside.github.io/WebPageCode/instagram_basic_display_api/';
 		private $_getCode = '';
 		private $_apiBaseUrl = 'https://api.instagram.com/';
 		private $_graphBaseUrl = 'https://graph.instagram.com/';
