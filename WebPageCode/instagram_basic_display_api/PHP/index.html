@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call PHP Script from HTML</title>
+</head>
+<body>
+    <h1>Call PHP Script from HTML</h1>
+    <button id="callScriptButton">Call Script</button>
+
+    <div id="output"></div>
+
+    <script>
+        document.getElementById("callScriptButton").addEventListener("click", function() {
+            // Faites une requête AJAX vers votre script PHP
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "test.php", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Affichez la réponse du script PHP dans votre page HTML
+                    document.getElementById("output").innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        });
+    </script>
+</body>
+</html>
